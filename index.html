@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3b2723">
+    <link rel="manifest" href="./manifest.json">
     <title>🐬るか</title>
     <style>
         :root {
@@ -1644,6 +1646,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         initTabs();
         renderAll();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js').catch(function() {});
+            });
+        }
 
         const fileInput = document.getElementById('backupFileInput');
         if (fileInput) {
