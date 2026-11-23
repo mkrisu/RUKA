@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐬るか</title>
+    <style>
+        :root {
+            --bg-dark: #241916;
+            --bg-dark-sub: #332420;
+            --card-bg: #fffbf7;
+            --card-sub: #f7efe8;
+            --primary: #e87a90;
+            --primary-dark: #c95b72;
+            --primary-light: #fce8ec;
+            --caramel: #d4a373;
+            --caramel-light: #f5ebe0;
+            --text-dark: #3b2a26;
+            --text-muted: #7a635c;
+            --border: #e6d7ce;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 14px 14px 86px 14px;
+            line-height: 1.65;
+        }
+        .container { max-width: 640px; margin: 0 auto; }
+
+        .app-header {
+            background: linear-gradient(135deg, #3b2723, #4e342e);
+            border: 1px solid #63433c;
+            color: #fff8f3;
+            padding: 15px 16px;
+            border-radius: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .app-title { font-size: 1.15rem; font-weight: bold; margin: 0; color: #ffe4ea; }
+        .app-sub { font-size: 0.78rem; color: #e2cfc7; margin-top: 2px; }
+        .user-badge {
+            background: rgba(232, 122, 144, 0.22);
+            border: 1px solid var(--primary);
+            color: #ffd6df;
+            padding: 6px 11px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .tab-menu {
+            display: flex;
+            gap: 5px;
+            background: var(--bg-dark-sub);
+            border: 1px solid #4d3832;
+            border-radius: 14px;
+            padding: 5px;
+            margin-bottom: 16px;
+            position: sticky;
+            top: 8px;
+            z-index: 100;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 9px 4px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            color: #d7c3bc;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary-dark);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+        }
+        h2 {
+            font-size: 1rem;
+            border-left: 5px solid var(--primary);
+            padding-left: 10px;
+            margin: 0 0 12px 0;
+            color: var(--text-dark);
+        }
+
+        .month-group {
+            margin-bottom: 16px;
+        }
+        .month-group:last-child {
+            margin-bottom: 0;
+        }
+        .month-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--caramel-light);
+            border: 1px solid #e2c5a6;
+            color: var(--text-dark);
+            font-size: 0.86rem;
+            font-weight: bold;
+            padding: 4px 11px;
+            border-radius: 999px;
+            margin-bottom: 9px;
+        }
+
+        .profile-block {
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 11px 13px;
+            margin-bottom: 10px;
+        }
+        .profile-block-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+        .profile-block-body {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            white-space: pre-line;
+        }
+
+        .highlight-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .caramel-box {
+            background: var(--caramel-light);
+            border-left: 4px solid var(--caramel);
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            margin-bottom: 10px;
+        }
+        .suggestion-box {
+            background: #fff4e8;
+            border: 1px solid #e6c39c;
+            border-left: 4px solid var(--caramel);
+            padding: 12px 14px;
+            border-radius: 11px;
+            margin-top: 12px;
+        }
+        .suggestion-title {
+            font-size: 0.86rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #fffbf7;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            font-size: 0.85rem;
+        }
+        .suggestion-btn {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid #f2c6d0;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .strategy-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        .strategy-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+        .strategy-check input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            accent-color: var(--primary-dark);
+            cursor: pointer;
+        }
+        .strategy-done {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+        .delete-btn {
+            background: #fff0f2;
+            color: #b71c1c;
+            border: 1px solid #f4c2c9;
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .delete-btn:hover {
+            background: #ffe0e5;
+        }
+        .tag {
+            display: inline-block;
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+            font-size: 0.78rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin: 2px 3px 2px 0;
+            font-weight: 600;
+        }
+        .tag.pink {
+            background: var(--primary-light);
+            border-color: #f2c6d0;
+            color: var(--primary-dark);
+        }
+        .tag.ng {
+            background: #ffebee;
+            border-color: #ffcdd2;
+            color: #b71c1c;
+        }
+
+        label.field-label {
+            display: block;
+            font-size: 0.83rem;
+            font-weight: bold;
+            margin: 10px 0 4px 0;
+            color: var(--text-dark);
+        }
+        input[type="text"], input[type="url"], input[type="password"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.91rem;
+            background: #fff;
+            color: var(--text-dark);
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
+        textarea { min-height: 130px; resize: vertical; }
+
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .btn, .file-btn-label {
+            flex: 1;
+            min-width: 130px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: none;
+            border-radius: 11px;
+            padding: 11px 14px;
+            font-size: 0.86rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .btn-primary, .file-btn-label.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+        }
+        .btn-secondary, .file-btn-label.secondary {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid #f2c6d0;
+        }
+        .btn-dark {
+            background: #4e342e;
+            color: #fff8f3;
+        }
+
+        .timeline-entry {
+            background: var(--card-sub);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+        }
+        .timeline-entry:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-title {
+            font-weight: bold;
+            font-size: 0.96rem;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+        .timeline-para {
+            font-size: 0.89rem;
+            margin: 0 0 8px 0;
+            color: var(--text-dark);
+        }
+        .timeline-para:last-of-type { margin-bottom: 0; }
+        .timeline-media img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 10px;
+            margin-top: 8px;
+            display: block;
+            border: 1px solid var(--border);
+        }
+        .media-link {
+            display: inline-block;
+            margin-top: 6px;
+            margin-right: 12px;
+            font-size: 0.83rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+
+        .status-msg {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.84rem;
+            font-weight: bold;
+            display: none;
+        }
+        .status-success { display: block; background: #e8f5e9; color: #1b5e20; }
+        .status-error { display: block; background: #ffebee; color: #b71c1c; }
+        .status-info { display: block; background: #fff3e0; color: #8d4900; }
+
+        .meta-line { font-size: 0.76rem; color: var(--text-muted); text-align: right; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="app-header">
+        <div>
+            <h1 class="app-title">🐬るか</h1>
+            <div class="app-sub">自分専用整理・作戦＆記録ノート ・ RUKA_v27</div>
+        </div>
+        <div class="user-badge">🐿️ ソロ用</div>
+    </header>
+
+    <nav class="tab-menu">
+        <button type="button" class="tab-btn active" data-tab="tab-plan-history">🚗 予定と履歴</button>
+        <button type="button" class="tab-btn" data-tab="tab-profile">🐬 プロフ</button>
+        <button type="button" class="tab-btn" data-tab="tab-add">✨ 追加</button>
+        <button type="button" class="tab-btn" data-tab="tab-strategy">🎯 作戦</button>
+        <button type="button" class="tab-btn" data-tab="tab-backup">💾 保存・復元</button>
+    </nav>
+
+    <!-- 1. 予定と履歴（同ページ） -->
+    <section id="tab-plan-history" class="tab-content active">
+        <div class="card">
+            <div class="meta-line" id="planUpdatedLabel">更新：-</div>
+            <h2>🚗 お出かけ予定（足利エリア決定）</h2>
+            <div class="highlight-box" id="nextPlanDisplay"></div>
+
+            <div id="nextSuggestionsBox" class="suggestion-box" style="display:none;">
+                <div class="suggestion-title">💡 次回にしたほうがいいこと・追加候補（自動提案）</div>
+                <div id="nextSuggestionsList"></div>
+            </div>
+
+            <details style="margin-top:10px;">
+                <summary style="cursor:pointer; font-size:0.84rem; font-weight:bold; color:var(--primary-dark);">✏️ 予定を編集する</summary>
+                <label class="field-label">タイトル</label>
+                <input type="text" id="planTitleInput">
+                <label class="field-label">日付</label>
+                <input type="date" id="planDateInput">
+                <label class="field-label">メインスポット</label>
+                <input type="text" id="planMainInput">
+                <label class="field-label">立ち寄り・ランチ候補</label>
+                <input type="text" id="planSubInput">
+                <label class="field-label">進め方メモ</label>
+                <input type="text" id="planStyleInput">
+                <div class="btn-row">
+                    <button type="button" class="btn btn-primary" onclick="saveNextPlan()">予定を保存</button>
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <h2>📝 思い出履歴（年月別）</h2>
+            <div id="timelineContainer"></div>
+        </div>
+    </section>
+
+    <!-- 2. プロフ（別ページ） -->
+    <section id="tab-profile" class="tab-content">
+        <div class="card">
+            <h2>🐬 るかさんのプロフィール</h2>
+            <div id="rukaProfileContainer"></div>
+            <div style="margin-top:12px;">
+                <span class="tag pink">犬派</span>
+                <span class="tag pink">動物園派</span>
+                <span class="tag pink">夏派</span>
+                <span class="tag pink">お米派</span>
+                <span class="tag pink">丼より定食派</span>
+                <span class="tag pink">二択：右派（大爆笑）</span>
+                <span class="tag ng">NG：パクチー・牡蠣・雲丹</span>
+            </div>
+            <div class="btn-row">
+                <input type="text" id="newRukaProfileItem" placeholder="例：好きな食べ物・気づいた特徴を追記..." style="flex:2;">
+                <button type="button" class="btn btn-secondary" style="flex:1; min-width:90px;" onclick="addRukaProfileItem()">追記する</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 追加 -->
+    <section id="tab-add" class="tab-content">
+        <div class="card">
+            <h2>✨ 記録追加・思い出し追記（既存保持＆自動整理）</h2>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:-4px;">
+                同じ日のデートについて「あとから思い出したこと」を追記すると、既存の記録を消さずに<strong>同じ日の記録へ段落・項目として整理統合</strong>し、年月別でまとめます。
+            </p>
+
+            <label class="field-label">対象（既存デートに追記するか、新しい記録にするか）</label>
+            <select id="targetEntrySelect" onchange="handleTargetEntryChange()">
+                <option value="__NEW__">＋ 新しいデート・イベント記録として追加</option>
+            </select>
+
+            <label class="field-label">日付・イベント見出し（例：2026-11-21 / 11/21 越谷レイクタウン映画デート）</label>
+            <input type="text" id="entryTitle" placeholder="例：2026-11-29 足利ドライブ＆あしかがフラワーパーク">
+
+            <label class="field-label">写真・動画リンク（任意）</label>
+            <input type="url" id="entryMedia" placeholder="https://drive.google.com/...">
+
+            <label class="field-label">できごと・あとから思い出したこと・次回の話</label>
+            <textarea id="entryBody" placeholder="楽しかったことや、あとから思い出した細かいエピソード、次回の行きたい場所などを自由に書いてください..."></textarea>
+
+            <div class="btn-row">
+                <button type="button" id="aiAppendBtn" class="btn btn-primary" onclick="runSmartAppend()">✨ 記録を追加・整理反映</button>
+            </div>
+            <div id="addStatus" class="status-msg"></div>
+        </div>
+    </section>
+
+    <!-- 4. 作戦 -->
+    <section id="tab-strategy" class="tab-content">
+        <div class="card">
+            <div class="meta-line" id="strategySaveIndicator">自動保存待機中</div>
+            <h2>🎯 作戦チェックリスト</h2>
+            <div class="caramel-box">
+                11/29の段取り・タイミング・気遣いを確認しながらチェックできます。各行右側の「×」ボタンから不要な項目を削除できます。
+            </div>
+            <div id="strategyChecklistContainer"></div>
+            <div class="btn-row">
+                <input type="text" id="newStrategyItemInput" placeholder="例：車内にブランケットとカイロを積む" style="flex:2;">
+                <button type="button" class="btn btn-secondary" style="flex:1; min-width:90px;" onclick="addStrategyItem()">追加</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 保存・復元 -->
+    <section id="tab-backup" class="tab-content">
+        <div class="card">
+            <h2>💾 バックアップ書き出し・復元</h2>
+            <p style="font-size:0.83rem; color:var(--text-muted); margin-top:0;">
+                プロフィール・思い出履歴・作戦チェック・提案をJSONファイルで保存・復元できます。
+            </p>
+            <div class="btn-row">
+                <button type="button" class="btn btn-primary" onclick="exportBackupJson()">⬇️ JSONバックアップを書き出し</button>
+                <label for="backupFileInput" class="file-btn-label secondary">📂 JSONファイルから復元</label>
+                <input type="file" id="backupFileInput" accept=".json,application/json" style="position:absolute;left:-9999px;opacity:0;">
+            </div>
+            <label class="field-label" style="margin-top:12px;">📋 JSONテキスト貼り付け復元</label>
+            <textarea id="backupJsonPaste" style="min-height:75px; font-size:0.8rem;" placeholder='JSONテキストを貼り付けて復元...'></textarea>
+            <div class="btn-row">
+                <button type="button" class="btn btn-secondary" onclick="restoreFromPaste()">貼り付け内容で復元</button>
+            </div>
+            <div id="backupStatus" class="status-msg"></div>
+        </div>
+
+        <div class="card">
+            <h2>🔑 Gemini API 設定（任意・AI整理強化用）</h2>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0;">
+                APIキーを設定するとAIが既存の記録を消さずに段落・文脈ごとに整理統合します。未設定でも既存記述を1文字も消さずに自動整理・年月別まとめを行います。
+            </p>
+            <label class="field-label">Gemini API キー</label>
+            <input type="password" id="geminiKeyInput" placeholder="AIza...">
+            <div class="btn-row">
+                <button type="button" class="btn btn-dark" onclick="saveGeminiKey()">APIキーを保存</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    const STORAGE = {
+        STATE: 'ruka_v27_solo_state',
+        STRATEGY: 'ruka_v27_solo_strategy',
+        GEMINI_KEY: 'ruka_v27_gemini_key',
+        VER: 'ruka_v27_export_ver'
+    };
+
+    const LEGACY_KEYS = {
+        STATE: ['ruka_v26_solo_state'],
+        STRATEGY: ['ruka_v26_solo_strategy'],
+        GEMINI_KEY: ['ruka_v26_gemini_key'],
+        VER: ['ruka_v26_export_ver']
+    };
+
+    function readStorageWithFallback(currentKey, fallbackKeys) {
+        const direct = localStorage.getItem(currentKey);
+        if (direct !== null && direct !== undefined && direct !== '') return direct;
+        for (let i = 0; i < (fallbackKeys || []).length; i++) {
+            const oldVal = localStorage.getItem(fallbackKeys[i]);
+            if (oldVal !== null && oldVal !== undefined && oldVal !== '') {
+                localStorage.setItem(currentKey, oldVal);
+                return oldVal;
+            }
+        }
+        return null;
+    }
+
+    const DEFAULT_NEXT_SUGGESTIONS = [
+        { id: 'sug_night_cold', text: '11月末の夜散策向けに、ブランケット・使い捨てカイロ・温かい飲み物（チャイや紅茶系など）を用意する', added: false },
+        { id: 'sug_pear_scent', text: '次回予定の「梨の香水」に気づいたら、押しつけがましくなく自然に褒める', added: false },
+        { id: 'sug_share_map', text: 'Googleマップの共有リストで、足利のランチ・立ち寄り候補を無理なくすり合わせる', added: false }
+    ];
+
+    const DEFAULT_STATE = {
+        updatedAt: '11/23 端末間表示・同期確認反映・v27',
+        nextPlan: {
+            title: '11/29（日・いい肉の日）栃木ドライブ＆告白予定',
+            date: '2026-11-29',
+            mainSpot: 'あしかがフラワーパーク（16:00〜16:30頃到着目安 / 所要約2〜2.5時間）',
+            subSpots: '足利エリア（足利織姫神社・鑁阿寺・地元ブランド牛ランチ）',
+            style: '行きたい場所を決めて、時間は大まかに見て動く'
+        },
+        nextSuggestions: DEFAULT_NEXT_SUGGESTIONS,
+        rukaProfile: [
+            {
+                category: '基本・住まい',
+                detail: '呼び方：るか（🐬）\n年齢：27歳（2000年早生まれ）\n住まい：吉川市（離婚後、実家暮らし / 結婚していた時は柏に住んでいた）'
+            },
+            {
+                category: '仕事・バイト履歴',
+                detail: '本業：臨床検査技師（病院勤務・シフト制 / 第1・第3・第5土曜午前出勤・2人体制24時間当直や連勤あり）\nバイト履歴：回転寿司みさき、スタバ、Tokyo Glass Company'
+            },
+            {
+                category: '家族・学生時代',
+                detail: '家族：姉が1人（2人姉妹・母とフェスに行く仲）、お父様はドア取付職人？\n学生時代：中高女子校・美術部'
+            },
+            {
+                category: '体質・習慣・飲み物＆食べ物',
+                detail: '体質・習慣：胃下垂、タバコ吸わない、お酒時々（1杯目ビール → 2杯目以降サワー）、泣く映画はティッシュ＆ゴミ袋を持参する几帳面さ\n好き：ゴンチャ（阿里山烏龍）、チャイティー、カントリーマアム・アルフォート\nNG食材：パクチー・牡蠣・雲丹'
+            },
+            {
+                category: '音楽・エンタメ・ファッション',
+                detail: '音楽・ライブ：HANA（FC会員）、BE:FIRST、SEKAI NO OWARI（スマホ裏にステッカー）/ ライブは1人でも行き、手拍子派\nエンタメ：Netflix契約中、ディズニーシー派（絶叫系OK・カチューシャは痛くなるため流行りの被り物希望）、スポーツ観戦に興味あり\nファッション：ZOZOTOWN・ZARA・H&M・韓国爆買い / 青や緑が似合う、茶色以外のコートやミニスカート用ロングブーツ狙い'
+            },
+            {
+                category: '香り',
+                detail: '普段は香水をつけない / 次回「梨の香水」予定'
+            },
+            {
+                category: '旅行・結婚観',
+                detail: '旅行スタイル：朝から活動し、行きたい場所を決めて大まかな時間で回るタイプ\n結婚・恋愛観：直近で離婚経験あり、30歳までに再婚・子ども2人希望、誠実で裏表のない安心できる関係を重視'
+            }
+        ],
+        timeline: [
+            {
+                id: 'tl_2026_11_21',
+                yearMonth: '2026年11月',
+                dateKey: '2026-11-21',
+                title: '11/21（2回目）越谷レイクタウン映画デート',
+                paragraphs: [
+                    '【服装・集合】茶色のコート、黒のモケモケ金ボタントップス、白ロングスカート。16時に駅集合。',
+                    '【ショッピング・映画】ZARAで自分に似合うロングコートを選んでくれ、たくさん褒めてくれた。その後ゲーセンへ行き、映画『ママがこの世界にいなくても』を鑑賞（アイスティーを注文し、ティッシュ＆ゴミ袋を持参）。',
+                    '【夕食・立ち寄り】夕食は「和食飛賀屋」で、まぐろ石焼きビビンバとサーモンアボカド醤油糀漬け丼をシェア。その後はH&Mとメガネ屋（Tokyo Glass Company）へ立ち寄り、閉館ギリギリに『パンどろぼう』の絵本を見に行った。',
+                    '【帰り際】駅構内でお互いの電車を調べながら少し長く一緒に過ごし、二択ゲーム（犬・動物園・夏・お米・定食・右派）で大爆笑。タメ口も定着し、一気に距離が縮まった。'
+                ],
+                mediaUrl: '',
+                placeUrl: ''
+            },
+            {
+                id: 'tl_2026_11_15',
+                yearMonth: '2026年11月',
+                dateKey: '2026-11-15',
+                title: '11/15（1回目）北千住イタリアンバル',
+                paragraphs: [
+                    '【お店の雰囲気・気遣い】会計システムエラーで貸切状態に。お皿を取り分けたり通路側にまとめたりと自然な気遣いが素敵だった。',
+                    '【注文内容・会計】コロコロチョリソー、ゴルゴンゾーラのニョッキ、シラスと島海苔のピッツァ、プレモル、ライムサワー（自分：ビール1・ハイボール3 / 計8,415円）。'
+                ],
+                mediaUrl: '',
+                placeUrl: 'https://maps.app.goo.gl/B7XGy5v2jA1hCQH98'
+            }
+        ]
+    };
+
+    const DEFAULT_STRATEGY_ITEMS = [
+        { text: '行先を整理する（足利エリア＋あしかがフラワーパーク：16:00〜16:30頃到着目安 / 所要約2〜2.5時間）', done: false },
+        { text: 'ベストタイミングを意識する（イルミネーション後、人通りが落ち着いた場所または車内で2人きりで一息ついた瞬間）', done: false },
+        { text: 'ストレートに誠実に伝える（「今日一緒にいて改めて思ったんだけど、るかちゃんのことが好きだ。よかったら付き合ってほしいな」・考える時間が必要そうでも急かさず穏やかに受け止める）', done: false },
+        { text: '話題ネタ：『猟奇的な彼女』リマスター', done: false },
+        { text: '「梨の香水」に気づいたら自然に褒める', done: false },
+        { text: '夜の冷え対策をする（車内にブランケットやカイロを用意、温かい飲み物・チャイや紅茶系などを提案）', done: false },
+        { text: '食事・飲み物の気遣いをする（NG食材：パクチー・牡蠣・雲丹に注意 / 1杯目ビール→2杯目以降サワー）', done: false },
+        { text: '忙しい時期の支え合いや、日常のちょっとした違和感・NGラインの感覚を自然に共有する', done: false }
+    ];
+
+    function cloneDefault(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+    function cleanLegacyText(text) {
+        return String(text || '')
+            .replace(/みかん（ルカ）さん\s*\/\s*/g, '')
+            .replace(/\s*\/\s*みかん（ルカ）さん/g, '')
+            .replace(/みかん（ルカ）さん/g, '')
+            .replace(/埼玉県越谷市（離婚後、実家暮らし \/ 最寄り：吉川駅）/g, '吉川市（離婚後、実家暮らし / 結婚していた時は柏に住んでいた）')
+            .replace(/（『猟奇的な彼女』リマスター等）、?/g, '')
+            .replace(/、?『猟奇的な彼女』リマスター等?/g, '')
+            .replace(/・アイスティー/g, '')
+            .replace(/アイスティー・?/g, '')
+            .replace(/\s*\/\s*香り・二択：[^\n]+/g, '')
+            .replace(/\n香り・二択：[^\n]+/g, '');
+    }
+
+    function inferDateInfoFromText(text) {
+        const s = String(text || '');
+        const fullMatch = s.match(/(20\d{2})[年\-\/](\d{1,2})[月\-\/](\d{1,2})/);
+        if (fullMatch) {
+            const y = fullMatch[1];
+            const m = String(fullMatch[2]).padStart(2, '0');
+            const d = String(fullMatch[3]).padStart(2, '0');
+            return {
+                year: Number(y),
+                month: Number(m),
+                yearMonth: Number(y) + '年' + Number(m) + '月',
+                dateKey: y + '-' + m + '-' + d
+            };
+        }
+        const mdMatch = s.match(/(\d{1,2})[\/月](\d{1,2})日?/);
+        if (mdMatch) {
+            const y = 2026;
+            const m = String(mdMatch[1]).padStart(2, '0');
+            const d = String(mdMatch[2]).padStart(2, '0');
+            return {
+                year: y,
+                month: Number(m),
+                yearMonth: y + '年' + Number(m) + '月',
+                dateKey: y + '-' + m + '-' + d
+            };
+        }
+        const ymMatch = s.match(/(20\d{2})[年\-\/](\d{1,2})月?/);
+        if (ymMatch) {
+            const y = Number(ymMatch[1]);
+            const m = Number(ymMatch[2]);
+            return {
+                year: y,
+                month: m,
+                yearMonth: y + '年' + m + '月',
+                dateKey: y + '-' + String(m).padStart(2, '0') + '-01'
+            };
+        }
+        return {
+            year: 2026,
+            month: 11,
+            yearMonth: '2026年11月',
+            dateKey: '2026-11-23'
+        };
+    }
+
+    function normalizeProfileBlocks(raw) {
+        let blocks = [];
+        if (Array.isArray(raw) && raw.length > 0) {
+            blocks = raw.map(function(item, idx) {
+                if (typeof item === 'string') {
+                    return { category: 'プロフィールメモ ' + (idx + 1), detail: cleanLegacyText(item) };
+                }
+                return {
+                    category: String((item && item.category) || ('プロフィールメモ ' + (idx + 1))),
+                    detail: cleanLegacyText((item && item.detail) || '')
+                };
+            }).filter(function(b) { return b.detail.trim() !== ''; });
+        } else {
+            blocks = cloneDefault(DEFAULT_STATE.rukaProfile);
+        }
+
+        const hasScent = blocks.some(function(b) { return b.category === '香り'; });
+        if (!hasScent) {
+            const scentBlock = { category: '香り', detail: '普段は香水をつけない / 次回「梨の香水」予定' };
+            const travelIdx = blocks.findIndex(function(b) { return b.category === '旅行・結婚観'; });
+            if (travelIdx >= 0) blocks.splice(travelIdx, 0, scentBlock);
+            else blocks.push(scentBlock);
+        }
+        return blocks;
+    }
+
+    function normalizeTimeline(raw) {
+        if (Array.isArray(raw) && raw.length > 0) {
+            return raw.map(function(item, idx) {
+                const rawParas = (item && Array.isArray(item.paragraphs) && item.paragraphs.length > 0)
+                    ? item.paragraphs.map(function(p) { return String(p); })
+                    : String((item && item.body) || '').split(/\n+/).map(function(p) { return p.trim(); }).filter(Boolean);
+                const title = String((item && item.title) || '思い出');
+                const inferred = inferDateInfoFromText(((item && item.dateKey) || '') + ' ' + title);
+                const ym = (item && item.yearMonth) ? String(item.yearMonth) : inferred.yearMonth;
+                const dk = (item && item.dateKey) ? String(item.dateKey) : inferred.dateKey;
+                return {
+                    id: String((item && item.id) || ('tl_' + dk + '_' + idx)),
+                    yearMonth: ym,
+                    dateKey: dk,
+                    title: title,
+                    paragraphs: rawParas.length > 0 ? rawParas : [String((item && item.body) || '')],
+                    mediaUrl: String((item && item.mediaUrl) || ''),
+                    placeUrl: String((item && item.placeUrl) || '')
+                };
+            });
+        }
+        return cloneDefault(DEFAULT_STATE.timeline);
+    }
+
+    function normalizeStrategyItems(raw) {
+        let items = [];
+        if (Array.isArray(raw) && raw.length > 0) {
+            items = raw.map(function(item) {
+                if (typeof item === 'string') return { text: item, done: false };
+                return { text: String((item && item.text) || ''), done: !!(item && item.done) };
+            }).filter(function(item) { return item.text.trim() !== ''; });
+        } else if (typeof raw === 'string' && raw.trim() !== '') {
+            const lines = raw.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(Boolean);
+            lines.forEach(function(line) {
+                if (line.startsWith('【') && line.endsWith('】')) return;
+                const cleaned = line.replace(/^[・\-\*]+\s*/, '').trim();
+                if (cleaned) items.push({ text: cleaned, done: false });
+            });
+        }
+        if (items.length === 0) items = cloneDefault(DEFAULT_STRATEGY_ITEMS);
+
+        const topicText = '話題ネタ：『猟奇的な彼女』リマスター';
+        if (!items.some(function(it) { return it.text.includes('猟奇的な彼女'); })) {
+            const pearIdx = items.findIndex(function(it) { return it.text.includes('梨の香水'); });
+            if (pearIdx >= 0) items.splice(pearIdx, 0, { text: topicText, done: false });
+            else items.push({ text: topicText, done: false });
+        }
+        return items;
+    }
+
+    function normalizeSuggestions(raw) {
+        if (Array.isArray(raw) && raw.length > 0) {
+            return raw.map(function(s, idx) {
+                if (typeof s === 'string') return { id: 'sug_' + idx + '_' + Date.now(), text: s, added: false };
+                return { id: (s && s.id) || ('sug_' + idx), text: String((s && s.text) || ''), added: !!(s && s.added) };
+            }).filter(function(s) { return s.text.trim() !== ''; });
+        }
+        return cloneDefault(DEFAULT_NEXT_SUGGESTIONS);
+    }
+
+    function loadState() {
+        try {
+            const raw = readStorageWithFallback(STORAGE.STATE, LEGACY_KEYS.STATE);
+            if (!raw) return cloneDefault(DEFAULT_STATE);
+            const parsed = JSON.parse(raw);
+            const merged = Object.assign(cloneDefault(DEFAULT_STATE), parsed || {});
+            merged.rukaProfile = normalizeProfileBlocks(
+                (parsed && parsed.rukaProfile) ||
+                (parsed && parsed.publicProfiles && parsed.publicProfiles.ruka) ||
+                (parsed && parsed.partnerMemos)
+            );
+            merged.timeline = normalizeTimeline(parsed && parsed.timeline);
+            merged.nextSuggestions = normalizeSuggestions(merged.nextSuggestions);
+            return merged;
+        } catch (e) {
+            return cloneDefault(DEFAULT_STATE);
+        }
+    }
+
+    let state = loadState();
+    let strategyItems = normalizeStrategyItems(
+        (function() {
+            const saved = readStorageWithFallback(STORAGE.STRATEGY, LEGACY_KEYS.STRATEGY);
+            if (!saved) return DEFAULT_STRATEGY_ITEMS;
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                return saved;
+            }
+        })()
+    );
+
+    function persistState() {
+        localStorage.setItem(STORAGE.STATE, JSON.stringify(state));
+        localStorage.setItem(STORAGE.STRATEGY, JSON.stringify(strategyItems || []));
+    }
+
+    function markStrategySaved(labelText) {
+        const stratInd = document.getElementById('strategySaveIndicator');
+        if (stratInd) {
+            stratInd.textContent = labelText || '保存しました ✓';
+            setTimeout(function() { stratInd.textContent = '自動保存済み'; }, 1800);
+        }
+    }
+
+    function initTabs() {
+        const btns = document.querySelectorAll('.tab-btn');
+        const secs = document.querySelectorAll('.tab-content');
+        btns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const target = btn.getAttribute('data-tab');
+                btns.forEach(function(b) { b.classList.remove('active'); });
+                secs.forEach(function(s) { s.classList.remove('active'); });
+                btn.classList.add('active');
+                const targetEl = document.getElementById(target);
+                if (targetEl) targetEl.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    }
+
+    function escapeHtml(s) {
+        return String(s || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function toImageSrc(url) {
+        const m = (url || '').match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        return (m && m[1]) ? ('https://drive.google.com/uc?export=view&id=' + m[1]) : url;
+    }
+
+    function nowLabel() {
+        const d = new Date();
+        return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+            String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+
+    function showMsg(id, msg, type) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'status-msg';
+        if (type === 'success') el.classList.add('status-success');
+        else if (type === 'error') el.classList.add('status-error');
+        else el.classList.add('status-info');
+        el.textContent = msg;
+    }
+
+    function applySuggestionToStrategy(idx) {
+        const sug = (state.nextSuggestions || [])[idx];
+        if (!sug) return;
+        if (!strategyItems.some(function(item) { return item.text === sug.text; })) {
+            strategyItems.push({ text: sug.text, done: false });
+        }
+        sug.added = true;
+        state.updatedAt = nowLabel() + '（提案を作戦へ反映）';
+        persistState();
+        renderAll();
+        markStrategySaved('作戦に追加しました ✓');
+    }
+
+    function deleteStrategyItem(idx) {
+        if (idx < 0 || idx >= strategyItems.length) return;
+        strategyItems.splice(idx, 1);
+        state.updatedAt = nowLabel() + '（作戦項目を削除）';
+        persistState();
+        renderAll();
+        markStrategySaved('削除しました ✓');
+    }
+
+    function sortTimelineDesc(items) {
+        return items.slice().sort(function(a, b) {
+            const dkA = String(a.dateKey || '0000-00-00');
+            const dkB = String(b.dateKey || '0000-00-00');
+            if (dkA !== dkB) return dkB.localeCompare(dkA);
+            return String(b.id || '').localeCompare(String(a.id || ''));
+        });
+    }
+
+    function groupTimelineByYearMonth(items) {
+        const sorted = sortTimelineDesc(items);
+        const groups = [];
+        const map = {};
+        sorted.forEach(function(item) {
+            const inf = inferDateInfoFromText((item.dateKey || '') + ' ' + (item.title || ''));
+            const ym = item.yearMonth || inf.yearMonth;
+            if (!map[ym]) {
+                map[ym] = { yearMonth: ym, items: [] };
+                groups.push(map[ym]);
+            }
+            map[ym].items.push(item);
+        });
+        return groups;
+    }
+
+    function populateTargetEntrySelect() {
+        const sel = document.getElementById('targetEntrySelect');
+        if (!sel) return;
+        const prevVal = sel.value;
+        sel.innerHTML = '';
+        const newOpt = document.createElement('option');
+        newOpt.value = '__NEW__';
+        newOpt.textContent = '＋ 新しいデート・イベント記録として追加';
+        sel.appendChild(newOpt);
+
+        sortTimelineDesc(state.timeline || []).forEach(function(item) {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = '【追記・整理】' + (item.yearMonth ? (item.yearMonth + ' / ') : '') + item.title;
+            sel.appendChild(opt);
+        });
+
+        if (prevVal && Array.from(sel.options).some(function(o) { return o.value === prevVal; })) {
+            sel.value = prevVal;
+        } else {
+            sel.value = '__NEW__';
+        }
+    }
+
+    function handleTargetEntryChange() {
+        const sel = document.getElementById('targetEntrySelect');
+        const titleInput = document.getElementById('entryTitle');
+        if (!sel || !titleInput) return;
+        if (sel.value !== '__NEW__') {
+            const found = (state.timeline || []).find(function(it) { return it.id === sel.value; });
+            if (found && !titleInput.value.trim()) {
+                titleInput.value = found.title;
+            }
+        }
+    }
+
+    function renderAll() {
+        const plan = state.nextPlan || DEFAULT_STATE.nextPlan;
+        document.getElementById('planUpdatedLabel').textContent = '最終更新：' + (state.updatedAt || '-');
+        document.getElementById('nextPlanDisplay').innerHTML =
+            '<b>📌 ' + escapeHtml(plan.title || '未設定') + '</b><br>' +
+            (plan.date ? ('<b>🗓️ 日程：</b>' + escapeHtml(plan.date) + '<br>') : '') +
+            (plan.mainSpot ? ('<b>✨ メイン：</b>' + escapeHtml(plan.mainSpot) + '<br>') : '') +
+            (plan.subSpots ? ('<b>🍴 立ち寄り・ランチ候補：</b>' + escapeHtml(plan.subSpots) + '<br>') : '') +
+            (plan.style ? ('<b>🧭 進め方：</b>' + escapeHtml(plan.style)) : '');
+
+        document.getElementById('planTitleInput').value = plan.title || '';
+        document.getElementById('planDateInput').value = plan.date || '';
+        document.getElementById('planMainInput').value = plan.mainSpot || '';
+        document.getElementById('planSubInput').value = plan.subSpots || '';
+        document.getElementById('planStyleInput').value = plan.style || '';
+
+        const sugBox = document.getElementById('nextSuggestionsBox');
+        const sugList = document.getElementById('nextSuggestionsList');
+        const suggestions = state.nextSuggestions || [];
+        if (sugBox && sugList) {
+            sugList.innerHTML = '';
+            const activeSugs = suggestions.filter(function(s) { return !s.added; });
+            if (activeSugs.length > 0) {
+                sugBox.style.display = 'block';
+                suggestions.forEach(function(s, idx) {
+                    if (s.added) return;
+                    const row = document.createElement('div');
+                    row.className = 'suggestion-item';
+                    const txt = document.createElement('span');
+                    txt.textContent = s.text;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'suggestion-btn';
+                    btn.textContent = '＋ 作戦に追加';
+                    btn.addEventListener('click', function() { applySuggestionToStrategy(idx); });
+                    row.appendChild(txt);
+                    row.appendChild(btn);
+                    sugList.appendChild(row);
+                });
+            } else {
+                sugBox.style.display = 'none';
+            }
+        }
+
+        const pBox = document.getElementById('rukaProfileContainer');
+        pBox.innerHTML = '';
+        (state.rukaProfile || []).forEach(function(block) {
+            const div = document.createElement('div');
+            div.className = 'profile-block';
+            const cat = document.createElement('div');
+            cat.className = 'profile-block-title';
+            cat.textContent = block.category;
+            const det = document.createElement('div');
+            det.className = 'profile-block-body';
+            det.textContent = block.detail;
+            div.appendChild(cat);
+            div.appendChild(det);
+            pBox.appendChild(div);
+        });
+
+        const tlBox = document.getElementById('timelineContainer');
+        tlBox.innerHTML = '';
+        const ymGroups = groupTimelineByYearMonth(state.timeline || []);
+        ymGroups.forEach(function(group) {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'month-group';
+
+            const ymBadge = document.createElement('div');
+            ymBadge.className = 'month-header';
+            ymBadge.textContent = '📅 ' + group.yearMonth + '（' + group.items.length + '件）';
+            groupDiv.appendChild(ymBadge);
+
+            group.items.forEach(function(item) {
+                const div = document.createElement('div');
+                div.className = 'timeline-entry';
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'timeline-title';
+                titleEl.textContent = item.title || '';
+                div.appendChild(titleEl);
+
+                const paras = (Array.isArray(item.paragraphs) && item.paragraphs.length > 0)
+                    ? item.paragraphs
+                    : String(item.body || '').split(/\n+/).filter(Boolean);
+
+                paras.forEach(function(pText) {
+                    const p = document.createElement('p');
+                    p.className = 'timeline-para';
+                    p.textContent = pText;
+                    div.appendChild(p);
+                });
+
+                if (item.placeUrl && /^https?:\/\//i.test(item.placeUrl.trim())) {
+                    const pLink = document.createElement('a');
+                    pLink.href = item.placeUrl.trim();
+                    pLink.target = '_blank';
+                    pLink.rel = 'noopener noreferrer';
+                    pLink.className = 'media-link';
+                    pLink.textContent = '📍 お店の場所（Googleマップ）を開く ↗';
+                    div.appendChild(pLink);
+                }
+
+                if (item.mediaUrl && /^https?:\/\//i.test(item.mediaUrl.trim())) {
+                    const md = document.createElement('div');
+                    md.className = 'timeline-media';
+                    const img = document.createElement('img');
+                    img.src = toImageSrc(item.mediaUrl.trim());
+                    img.onerror = function() { img.style.display = 'none'; };
+                    const a = document.createElement('a');
+                    a.href = item.mediaUrl.trim();
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.className = 'media-link';
+                    a.textContent = '📎 写真・動画リンクを開く ↗';
+                    md.appendChild(img);
+                    md.appendChild(a);
+                    div.appendChild(md);
+                }
+
+                groupDiv.appendChild(div);
+            });
+
+            tlBox.appendChild(groupDiv);
+        });
+
+        populateTargetEntrySelect();
+
+        const stratBox = document.getElementById('strategyChecklistContainer');
+        if (stratBox) {
+            stratBox.innerHTML = '';
+            (strategyItems || []).forEach(function(item, idx) {
+                const div = document.createElement('div');
+                div.className = 'strategy-item';
+
+                const lbl = document.createElement('label');
+                lbl.className = 'strategy-check';
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !!item.done;
+                cb.addEventListener('change', function() {
+                    strategyItems[idx].done = cb.checked;
+                    persistState();
+                    renderAll();
+                    markStrategySaved();
+                });
+
+                const sp = document.createElement('span');
+                sp.className = item.done ? 'strategy-done' : '';
+                sp.textContent = item.text;
+
+                lbl.appendChild(cb);
+                lbl.appendChild(sp);
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'delete-btn';
+                delBtn.title = 'この作戦を削除';
+                delBtn.setAttribute('aria-label', 'この作戦を削除');
+                delBtn.textContent = '×';
+                delBtn.addEventListener('click', function() {
+                    deleteStrategyItem(idx);
+                });
+
+                div.appendChild(lbl);
+                div.appendChild(delBtn);
+                stratBox.appendChild(div);
+            });
+        }
+    }
+
+    function addStrategyItem() {
+        const input = document.getElementById('newStrategyItemInput');
+        const text = (input ? input.value : '').trim();
+        if (!text) return;
+        strategyItems.push({ text: text, done: false });
+        input.value = '';
+        persistState();
+        renderAll();
+        markStrategySaved();
+    }
+
+    function saveNextPlan() {
+        state.nextPlan = {
+            title: document.getElementById('planTitleInput').value.trim(),
+            date: document.getElementById('planDateInput').value,
+            mainSpot: document.getElementById('planMainInput').value.trim(),
+            subSpots: document.getElementById('planSubInput').value.trim(),
+            style: document.getElementById('planStyleInput').value.trim()
+        };
+        state.updatedAt = nowLabel();
+        persistState();
+        renderAll();
+    }
+
+    function appendProfileNote(text) {
+        if (!text) return;
+        const idx = state.rukaProfile.findIndex(function(b) { return b.category === '追記・その他'; });
+        if (idx >= 0) {
+            if (!state.rukaProfile[idx].detail.includes(text)) {
+                state.rukaProfile[idx].detail = state.rukaProfile[idx].detail
+                    ? (state.rukaProfile[idx].detail + '\n' + text)
+                    : text;
+            }
+        } else {
+            state.rukaProfile.push({ category: '追記・その他', detail: text });
+        }
+    }
+
+    function addRukaProfileItem() {
+        const text = document.getElementById('newRukaProfileItem').value.trim();
+        if (!text) return;
+        if (!Array.isArray(state.rukaProfile)) state.rukaProfile = [];
+        appendProfileNote(text);
+        document.getElementById('newRukaProfileItem').value = '';
+        state.updatedAt = nowLabel();
+        persistState();
+        renderAll();
+    }
+
+    function extractRuleBasedProfileItems(text) {
+        const keywords = [
+            '好き', '嫌い', '苦手', 'NG', 'アレルギー', '香水', '香り',
+            '服', 'ファッション', 'コート', 'ブーツ', '色', 'お酒', 'ビール', 'サワー',
+            '食べ物', '飲み物', '紅茶', 'チャイ', 'スイーツ', '甘い', '音楽', '映画',
+            'ドラマ', 'アニメ', '趣味', '休みの日', 'シフト', '当直', '仕事', 'バイト', '結婚', '子ども', '将来', '住まい', '住んで'
+        ];
+        const parts = String(text || '')
+            .split(/[\n。！!？?]+/)
+            .map(function(s) { return s.trim(); })
+            .filter(Boolean);
+
+        const extracted = [];
+        parts.forEach(function(seg) {
+            if (keywords.some(function(k) { return seg.includes(k); })) {
+                const alreadyExists = state.rukaProfile.some(function(b) { return b.detail.includes(seg); });
+                if (!alreadyExists && !extracted.includes(seg)) {
+                    extracted.push(seg);
+                }
+            }
+        });
+        return extracted;
+    }
+
+    function extractRuleBasedNextUpdates(text) {
+        const parts = String(text || '')
+            .split(/[\n。！!？?]+/)
+            .map(function(s) { return s.trim(); })
+            .filter(Boolean);
+
+        const nextKeywords = [
+            '次回', '今度', '次は', '11/29', '足利', 'あしかが', 'フラワーパーク',
+            'ドライブ', 'ランチ', '立ち寄り', '行きたい', '行こう', '予定', '約束', '告白', '香水'
+        ];
+
+        const spotUpdates = [];
+        const strategyAdditions = [];
+        const generatedSuggestions = [];
+
+        parts.forEach(function(seg) {
+            if (!nextKeywords.some(function(k) { return seg.includes(k); })) return;
+
+            if (/行きたい|行こう|立ち寄り|ランチ|カフェ|神社|寺|アウトレット|イルミ|ドライブ/.test(seg)) {
+                spotUpdates.push(seg);
+            }
+
+            if (/確認|準備|持参|用意|予約|調べる|褒める|気をつける|注意|提案|伝える|相談|共有|作戦/.test(seg)) {
+                strategyAdditions.push(seg);
+            } else if (/次回|今度|次は|行きたい|行こう|ランチ|立ち寄り|香水/.test(seg)) {
+                generatedSuggestions.push('次回「' + seg + '」に合わせて、事前に場所や段取り・持ち物を確認しておく');
+            }
+        });
+
+        return { spotUpdates: spotUpdates, strategyAdditions: strategyAdditions, generatedSuggestions: generatedSuggestions };
+    }
+
+    function mergeNextPlanFromText(spotUpdates, rawText) {
+        if (!state.nextPlan) state.nextPlan = cloneDefault(DEFAULT_STATE.nextPlan);
+        let planChanged = false;
+
+        const dateMatch = String(rawText || '').match(/(?:20\d{2}[-\/])?(\d{1,2})[\/月](\d{1,2})日?/);
+        if (dateMatch) {
+            const m = String(dateMatch[1]).padStart(2, '0');
+            const d = String(dateMatch[2]).padStart(2, '0');
+            const yr = state.nextPlan.date ? state.nextPlan.date.slice(0, 4) : '2026';
+            const iso = yr + '-' + m + '-' + d;
+            if (state.nextPlan.date !== iso && rawText.includes('次回')) {
+                state.nextPlan.date = iso;
+                planChanged = true;
+            }
+        }
+
+        if (spotUpdates.length > 0) {
+            const currentSub = state.nextPlan.subSpots || '';
+            const toAdd = spotUpdates.filter(function(s) { return !currentSub.includes(s); });
+            if (toAdd.length > 0) {
+                state.nextPlan.subSpots = currentSub ? (currentSub + ' / ' + toAdd.join('、')) : toAdd.join('、');
+                planChanged = true;
+            }
+        }
+        return planChanged;
+    }
+
+    function findMatchingExistingEntry(selectedId, titleText, bodyText) {
+        if (selectedId && selectedId !== '__NEW__') {
+            return (state.timeline || []).find(function(it) { return it.id === selectedId; }) || null;
+        }
+        const combined = String(titleText || '') + ' ' + String(bodyText || '');
+        const mdMatch = combined.match(/(?:20\d{2}[年\-\/])?(\d{1,2})[\/月](\d{1,2})日?/);
+        if (mdMatch) {
+            const m = String(mdMatch[1]).padStart(2, '0');
+            const d = String(mdMatch[2]).padStart(2, '0');
+            const targetDk = '2026-' + m + '-' + d;
+            const shortMd = Number(m) + '/' + Number(d);
+            const padMd = m + '/' + d;
+            return (state.timeline || []).find(function(it) {
+                return it.dateKey === targetDk ||
+                    String(it.title || '').includes(shortMd) ||
+                    String(it.title || '').includes(padMd);
+            }) || null;
+        }
+        return null;
+    }
+
+    function organizeRecollectionParagraphs(rawBody) {
+        const lines = String(rawBody || '')
+            .split(/\r?\n+/)
+            .map(function(l) { return l.trim(); })
+            .filter(Boolean);
+
+        const organized = [];
+        lines.forEach(function(line) {
+            if (/^【.+】/.test(line)) {
+                organized.push(line);
+            } else {
+                organized.push('【思い出し追記】' + line);
+            }
+        });
+        return organized.length > 0 ? organized : ['【思い出し追記】' + String(rawBody || '').trim()];
+    }
+
+    function mergeIntoExistingTimelineEntry(entry, newParas, mediaUrl) {
+        if (!Array.isArray(entry.paragraphs)) entry.paragraphs = [];
+        const existingJoined = entry.paragraphs.join('\n');
+        let addedCount = 0;
+
+        newParas.forEach(function(np) {
+            const cleanNp = String(np || '').trim();
+            if (!cleanNp) return;
+            const bareText = cleanNp.replace(/^【[^】]+】\s*/, '');
+            if (!existingJoined.includes(cleanNp) && (!bareText || !existingJoined.includes(bareText))) {
+                entry.paragraphs.push(cleanNp);
+                addedCount++;
+            }
+        });
+
+        if (mediaUrl && !entry.mediaUrl) {
+            entry.mediaUrl = mediaUrl;
+        }
+        return addedCount;
+    }
+
+    async function runSmartAppend() {
+        const apiKey = (readStorageWithFallback(STORAGE.GEMINI_KEY, LEGACY_KEYS.GEMINI_KEY) || '').trim();
+        const selectedTargetId = document.getElementById('targetEntrySelect').value;
+        const title = document.getElementById('entryTitle').value.trim();
+        const mediaUrl = document.getElementById('entryMedia').value.trim();
+        const body = document.getElementById('entryBody').value.trim();
+
+        if (!body && !mediaUrl) {
+            showMsg('addStatus', 'できごと・メモ内容またはリンクを入力してください。', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('aiAppendBtn');
+        btn.disabled = true;
+        btn.textContent = '既存保持のまま整理・反映中...';
+        showMsg('addStatus', '既存データを消さずに整理・反映中...', 'info');
+
+        const matchedExisting = findMatchingExistingEntry(selectedTargetId, title, body);
+
+        if (apiKey && body) {
+            const prompt =
+                '既存の情報は絶対に削除・上書きせず、新しく追記された「思い出しメモ・記録」を整理してください。JSONのみで出力してください。\n' +
+                '{\n' +
+                '  "mergedParagraphs": ["既存段落をすべて先頭に残し、そのあとに新しく追記された内容を【話題・場面の見出し】付き段落として並べた完全な配列"],\n' +
+                '  "newParagraphsForNewEntry": ["新規記録の場合の段落配列"],\n' +
+                '  "timelineTitle": "見出し",\n' +
+                '  "yearMonth": "2026年11月",\n' +
+                '  "dateKey": "2026-11-29",\n' +
+                '  "newRukaProfileItems": ["既存と重複しないプロフィール項目"],\n' +
+                '  "nextPlanSubSpotAdditions": ["次回の立ち寄り・ランチ候補に足すべき短い語句"],\n' +
+                '  "newStrategyItems": ["次回の作戦チェックリストに追加すべき行動"],\n' +
+                '  "nextSuggestions": ["次回にしたほうがいいことの自動提案"]\n' +
+                '}\n' +
+                '【既存の対象記録（これを絶対に消さないこと）】\n' + JSON.stringify(matchedExisting || {}) + '\n' +
+                '【既存のるかさんプロフィール】\n' + JSON.stringify(state.rukaProfile || []) + '\n' +
+                '【現在の次回予定】\n' + JSON.stringify(state.nextPlan || {}) + '\n' +
+                '【今回の追記・入力】\n見出し：' + title + '\n内容：' + body;
+
+            try {
+                const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(apiKey), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: 'application/json' }
+                    })
+                });
+                if (!res.ok) throw new Error('APIエラー (' + res.status + ')');
+                const data = await res.json();
+                const rawJson = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '{}';
+                const parsed = JSON.parse(rawJson);
+
+                let actionLabel = '追加';
+                if (matchedExisting) {
+                    const origParas = Array.isArray(matchedExisting.paragraphs) ? matchedExisting.paragraphs.slice() : [];
+                    const aiMerged = Array.isArray(parsed.mergedParagraphs) ? parsed.mergedParagraphs.filter(Boolean) : [];
+                    const fallbackNew = organizeRecollectionParagraphs(body);
+                    const finalParas = origParas.slice();
+
+                    if (aiMerged.length > 0) {
+                        aiMerged.forEach(function(p) {
+                            const txt = String(p).trim();
+                            const bare = txt.replace(/^【[^】]+】\s*/, '');
+                            if (!finalParas.includes(txt) && (!bare || !finalParas.join('\n').includes(bare))) {
+                                finalParas.push(txt);
+                            }
+                        });
+                    } else {
+                        mergeIntoExistingTimelineEntry({ paragraphs: finalParas }, fallbackNew, mediaUrl);
+                    }
+
+                    matchedExisting.paragraphs = finalParas;
+                    if (mediaUrl && !matchedExisting.mediaUrl) matchedExisting.mediaUrl = mediaUrl;
+                    actionLabel = '既存記録を保持したまま整理統合';
+                } else {
+                    const inf = inferDateInfoFromText(((parsed && parsed.dateKey) || '') + ' ' + ((parsed && parsed.yearMonth) || '') + ' ' + title + ' ' + body);
+                    const paras = (Array.isArray(parsed.newParagraphsForNewEntry) && parsed.newParagraphsForNewEntry.length > 0)
+                        ? parsed.newParagraphsForNewEntry
+                        : organizeRecollectionParagraphs(body);
+                    state.timeline.unshift({
+                        id: 'tl_' + inf.dateKey + '_' + Date.now(),
+                        yearMonth: (parsed && parsed.yearMonth) || inf.yearMonth,
+                        dateKey: (parsed && parsed.dateKey) || inf.dateKey,
+                        title: (parsed && parsed.timelineTitle) || title || (nowLabel() + ' 思い出'),
+                        paragraphs: paras.length > 0 ? paras : [body],
+                        mediaUrl: mediaUrl,
+                        placeUrl: ''
+                    });
+                    actionLabel = '年月別履歴に新規追加';
+                }
+
+                let profCount = 0;
+                if (Array.isArray(parsed.newRukaProfileItems)) {
+                    parsed.newRukaProfileItems.forEach(function(it) {
+                        if (it && !state.rukaProfile.some(function(b) { return b.detail.includes(it); })) {
+                            appendProfileNote(it);
+                            profCount++;
+                        }
+                    });
+                }
+
+                let planChanged = false;
+                if (Array.isArray(parsed.nextPlanSubSpotAdditions) && parsed.nextPlanSubSpotAdditions.length > 0) {
+                    planChanged = mergeNextPlanFromText(parsed.nextPlanSubSpotAdditions, body);
+                }
+
+                let stratCount = 0;
+                if (Array.isArray(parsed.newStrategyItems)) {
+                    parsed.newStrategyItems.forEach(function(it) {
+                        if (it && !strategyItems.some(function(s) { return s.text === it; })) {
+                            strategyItems.push({ text: it, done: false });
+                            stratCount++;
+                        }
+                    });
+                }
+
+                let sugCount = 0;
+                if (!Array.isArray(state.nextSuggestions)) state.nextSuggestions = [];
+                if (Array.isArray(parsed.nextSuggestions)) {
+                    parsed.nextSuggestions.forEach(function(txt, i) {
+                        if (txt && !state.nextSuggestions.some(function(s) { return s.text === txt; })) {
+                            state.nextSuggestions.unshift({ id: 'ai_sug_' + Date.now() + '_' + i, text: txt, added: false });
+                            sugCount++;
+                        }
+                    });
+                }
+
+                document.getElementById('entryTitle').value = '';
+                document.getElementById('entryMedia').value = '';
+                document.getElementById('entryBody').value = '';
+                state.updatedAt = nowLabel() + '（' + actionLabel + '）';
+                persistState();
+                renderAll();
+
+                const extras = [];
+                if (profCount > 0) extras.push('プロフ ' + profCount + ' 件');
+                if (planChanged) extras.push('次回予定');
+                if (stratCount > 0) extras.push('作戦 ' + stratCount + ' 件');
+                if (sugCount > 0) extras.push('次回提案 ' + sugCount + ' 件');
+
+                showMsg(
+                    'addStatus',
+                    actionLabel + 'しました！' + (extras.length > 0 ? ('（' + extras.join('・') + 'も反映）') : ''),
+                    'success'
+                );
+                btn.disabled = false;
+                btn.textContent = '✨ 記録を追加・整理反映';
+                return;
+            } catch (err) {
+                showMsg('addStatus', 'AI整理に失敗したためローカル整理に切り替えます：' + err.message, 'info');
+            }
+        }
+
+        const ruleProf = extractRuleBasedProfileItems(body);
+        ruleProf.forEach(function(it) { appendProfileNote(it); });
+
+        const nextUpdates = extractRuleBasedNextUpdates(body);
+        const planChanged = mergeNextPlanFromText(nextUpdates.spotUpdates, body);
+
+        let stratCount = 0;
+        nextUpdates.strategyAdditions.forEach(function(it) {
+            if (!strategyItems.some(function(s) { return s.text === it; })) {
+                strategyItems.push({ text: it, done: false });
+                stratCount++;
+            }
+        });
+
+        let sugCount = 0;
+        if (!Array.isArray(state.nextSuggestions)) state.nextSuggestions = [];
+        nextUpdates.generatedSuggestions.forEach(function(txt, i) {
+            if (!state.nextSuggestions.some(function(s) { return s.text === txt; })) {
+                state.nextSuggestions.unshift({ id: 'rule_sug_' + Date.now() + '_' + i, text: txt, added: false });
+                sugCount++;
+            }
+        });
+
+        const organizedParas = organizeRecollectionParagraphs(body);
+        let actionMsg = '';
+
+        if (matchedExisting) {
+            mergeIntoExistingTimelineEntry(matchedExisting, organizedParas, mediaUrl);
+            actionMsg = '「' + matchedExisting.title + '」の既存記録を消さずに思い出し内容を追記・整理しました！';
+        } else {
+            const inf = inferDateInfoFromText(title + ' ' + body);
+            state.timeline.unshift({
+                id: 'tl_' + inf.dateKey + '_' + Date.now(),
+                yearMonth: inf.yearMonth,
+                dateKey: inf.dateKey,
+                title: title || (nowLabel() + ' 思い出'),
+                paragraphs: organizedParas,
+                mediaUrl: mediaUrl,
+                placeUrl: ''
+            });
+            actionMsg = inf.yearMonth + ' の履歴に記録を追加しました！';
+        }
+
+        document.getElementById('entryTitle').value = '';
+        document.getElementById('entryMedia').value = '';
+        document.getElementById('entryBody').value = '';
+        state.updatedAt = nowLabel() + '（記録整理）';
+        persistState();
+        renderAll();
+
+        const extras = [];
+        if (ruleProf.length > 0) extras.push('プロフ ' + ruleProf.length + ' 件');
+        if (planChanged) extras.push('次回予定');
+        if (stratCount > 0) extras.push('作戦 ' + stratCount + ' 件');
+        if (sugCount > 0) extras.push('次回提案 ' + sugCount + ' 件');
+
+        showMsg(
+            'addStatus',
+            actionMsg + (extras.length > 0 ? ('（' + extras.join('・') + 'も反映）') : ''),
+            'success'
+        );
+        btn.disabled = false;
+        btn.textContent = '✨ 記録を追加・整理反映';
+    }
+
+    function applyImportedJson(parsed) {
+        if (!parsed || typeof parsed !== 'object') throw new Error('JSON形式が不正です。');
+        const src = parsed.appState || parsed.soloState || parsed;
+        const next = Object.assign(cloneDefault(DEFAULT_STATE), src || {});
+        next.rukaProfile = normalizeProfileBlocks(
+            (src && src.rukaProfile) ||
+            (src && src.publicProfiles && src.publicProfiles.ruka) ||
+            (src && src.partnerMemos)
+        );
+        next.timeline = normalizeTimeline(src && src.timeline);
+        next.nextSuggestions = normalizeSuggestions(parsed.nextSuggestions || next.nextSuggestions);
+        state = next;
+
+        if (Array.isArray(parsed.strategyItems)) {
+            strategyItems = normalizeStrategyItems(parsed.strategyItems);
+        } else if (parsed.privateMemos && typeof parsed.privateMemos.mikio === 'string') {
+            strategyItems = normalizeStrategyItems(parsed.privateMemos.mikio);
+        } else if (typeof parsed.strategyText === 'string') {
+            strategyItems = normalizeStrategyItems(parsed.strategyText);
+        }
+        persistState();
+        renderAll();
+    }
+
+    function handleFileUpload(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function() {
+            try {
+                const text = String(reader.result || '').replace(/^\uFEFF/, '').trim();
+                applyImportedJson(JSON.parse(text));
+                showMsg('backupStatus', 'JSONバックアップから復元しました！', 'success');
+            } catch (err) {
+                showMsg('backupStatus', '読み込みエラー：' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    function restoreFromPaste() {
+        const raw = document.getElementById('backupJsonPaste').value.trim();
+        if (!raw) {
+            showMsg('backupStatus', 'JSONテキストを入力してください。', 'error');
+            return;
+        }
+        try {
+            applyImportedJson(JSON.parse(raw.replace(/^\uFEFF/, '')));
+            document.getElementById('backupJsonPaste').value = '';
+            showMsg('backupStatus', '貼り付け内容から復元しました！', 'success');
+        } catch (err) {
+            showMsg('backupStatus', '解析エラー：' + err.message, 'error');
+        }
+    }
+
+    function exportBackupJson() {
+        const cur = parseInt(readStorageWithFallback(STORAGE.VER, LEGACY_KEYS.VER) || '27', 10);
+        const next = isNaN(cur) ? 28 : cur + 1;
+        localStorage.setItem(STORAGE.VER, String(next));
+
+        const payload = {
+            version: 'RUKA_v' + next + '_backup',
+            exportedAt: new Date().toISOString(),
+            title: '🐬るか',
+            appState: {
+                updatedAt: state.updatedAt,
+                nextPlan: state.nextPlan,
+                nextSuggestions: state.nextSuggestions,
+                publicProfiles: { ruka: state.rukaProfile },
+                timeline: state.timeline
+            },
+            rukaProfile: state.rukaProfile,
+            timeline: state.timeline,
+            nextSuggestions: state.nextSuggestions,
+            strategyItems: strategyItems,
+            strategyText: (strategyItems || []).map(function(i) { return (i.done ? '[x] ' : '[ ] ') + i.text; }).join('\n')
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RUKA_v' + next + '_backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function saveGeminiKey() {
+        const k = document.getElementById('geminiKeyInput').value.trim();
+        if (k) localStorage.setItem(STORAGE.GEMINI_KEY, k);
+        else localStorage.removeItem(STORAGE.GEMINI_KEY);
+        showMsg('backupStatus', 'Gemini APIキーを保存しました。', 'success');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initTabs();
+        renderAll();
+
+        const fileInput = document.getElementById('backupFileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                handleFileUpload(e.target.files[0]);
+            });
+        }
+
+        const stratInput = document.getElementById('newStrategyItemInput');
+        if (stratInput) {
+            stratInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addStrategyItem();
+                }
+            });
+        }
+
+        const stratInd = document.getElementById('strategySaveIndicator');
+        if (stratInd) stratInd.textContent = '自動保存済み';
+
+        const savedKey = readStorageWithFallback(STORAGE.GEMINI_KEY, LEGACY_KEYS.GEMINI_KEY);
+        if (savedKey) document.getElementById('geminiKeyInput').value = savedKey;
+    });
+</script>
+</body>
+</html>
