@@ -377,7 +377,32 @@
         .status-info { display: block; background: #fff3e0; color: #8d4900; }
 
         .meta-line { font-size: 0.76rem; color: var(--text-muted); text-align: right; margin-bottom: 6px; }
+        .drive-pill {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--caramel-light);
+            color: var(--text-dark);
+            border: 1px solid #e2c5a6;
+            margin-bottom: 8px;
+        }
+        .photo-preview-box {
+            margin-top: 8px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .photo-preview-box img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 10px;
+            margin-top: 6px;
+            display: block;
+            border: 1px solid var(--border);
+        }
     </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -385,7 +410,7 @@
     <header class="app-header">
         <div>
             <h1 class="app-title">🐬るか</h1>
-            <div class="app-sub">自分専用整理・作戦＆記録ノート ・ RUKA_v27</div>
+            <div class="app-sub">自分専用整理・作戦＆記録ノート ・ RUKA_v29</div>
         </div>
         <div class="user-badge">🐿️ ソロ用</div>
     </header>
@@ -471,7 +496,14 @@
             <label class="field-label">日付・イベント見出し（例：2026-11-21 / 11/21 越谷レイクタウン映画デート）</label>
             <input type="text" id="entryTitle" placeholder="例：2026-11-29 足利ドライブ＆あしかがフラワーパーク">
 
-            <label class="field-label">写真・動画リンク（任意）</label>
+            <label class="field-label">📷 スマホから写真を選んでドライブに保存（任意）</label>
+            <div class="btn-row" style="margin-top:4px;">
+                <label for="drivePhotoInput" class="file-btn-label secondary">📸 写真を選ぶ＆ドライブへアップロード</label>
+                <input type="file" id="drivePhotoInput" accept="image/*" style="position:absolute;left:-9999px;opacity:0;">
+            </div>
+            <div id="photoUploadPreview" class="photo-preview-box"></div>
+
+            <label class="field-label">写真・動画リンク（自動入力または手動URL）</label>
             <input type="url" id="entryMedia" placeholder="https://drive.google.com/...">
 
             <label class="field-label">できごと・あとから思い出したこと・次回の話</label>
@@ -500,10 +532,29 @@
         </div>
     </section>
 
-    <!-- 5. 保存・復元 -->
+    <!-- 5. 保存・復元＆Googleドライブ連携 -->
     <section id="tab-backup" class="tab-content">
         <div class="card">
-            <h2>💾 バックアップ書き出し・復元</h2>
+            <h2>☁️ Googleドライブ連携（写真＆JSONフォルダ集約）</h2>
+            <div id="driveAuthBadge" class="drive-pill">ドライブ状態：未連携</div>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0;">
+                自分のGoogleドライブ直下に <b>RUKA_App_Data</b> フォルダを作成し、写真とバックアップJSON（<code>ruka_backup.json</code>）をまとめて保存・同期できます。
+            </p>
+            <label class="field-label">Google OAuth クライアント ID（<code>.apps.googleusercontent.com</code>）</label>
+            <input type="text" id="googleClientIdInput" placeholder="1234567890-xxxx.apps.googleusercontent.com">
+            <div class="btn-row">
+                <button type="button" class="btn btn-dark" onclick="saveGoogleClientId()">Client ID 保存</button>
+                <button type="button" class="btn btn-primary" onclick="connectGoogleDrive()">🔗 ドライブ連携（ログイン）</button>
+            </div>
+            <div class="btn-row">
+                <button type="button" class="btn btn-secondary" onclick="uploadBackupToDrive()">☁️ ドライブへバックアップ保存</button>
+                <button type="button" class="btn btn-secondary" onclick="restoreBackupFromDrive()">⬇️ ドライブから最新復元</button>
+            </div>
+            <div id="driveStatus" class="status-msg"></div>
+        </div>
+
+        <div class="card">
+            <h2>💾 ローカルJSONバックアップ書き出し・復元</h2>
             <p style="font-size:0.83rem; color:var(--text-muted); margin-top:0;">
                 プロフィール・思い出履歴・作戦チェック・提案をJSONファイルで保存・復元できます。
             </p>
@@ -536,18 +587,28 @@
 
 <script>
     const STORAGE = {
-        STATE: 'ruka_v27_solo_state',
-        STRATEGY: 'ruka_v27_solo_strategy',
-        GEMINI_KEY: 'ruka_v27_gemini_key',
-        VER: 'ruka_v27_export_ver'
+        STATE: 'ruka_v28_solo_state',
+        STRATEGY: 'ruka_v28_solo_strategy',
+        GEMINI_KEY: 'ruka_v28_gemini_key',
+        VER: 'ruka_v28_export_ver',
+        GDRIVE_CLIENT_ID: 'ruka_v28_gdrive_client_id'
     };
 
     const LEGACY_KEYS = {
-        STATE: ['ruka_v26_solo_state'],
-        STRATEGY: ['ruka_v26_solo_strategy'],
-        GEMINI_KEY: ['ruka_v26_gemini_key'],
-        VER: ['ruka_v26_export_ver']
+        STATE: ['ruka_v27_solo_state', 'ruka_v26_solo_state'],
+        STRATEGY: ['ruka_v27_solo_strategy', 'ruka_v26_solo_strategy'],
+        GEMINI_KEY: ['ruka_v27_gemini_key', 'ruka_v26_gemini_key'],
+        VER: ['ruka_v27_export_ver', 'ruka_v26_export_ver'],
+        GDRIVE_CLIENT_ID: ['ruka_v27_gdrive_client_id']
     };
+
+    const DRIVE_FOLDER_NAME = 'RUKA_App_Data';
+    const DRIVE_BACKUP_FILENAME = 'ruka_backup.json';
+    const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+
+    let driveAccessToken = '';
+    let driveTokenExpiry = 0;
+    let driveFolderIdCache = '';
 
     function readStorageWithFallback(currentKey, fallbackKeys) {
         const direct = localStorage.getItem(currentKey);
@@ -569,7 +630,7 @@
     ];
 
     const DEFAULT_STATE = {
-        updatedAt: '11/23 端末間表示・同期確認反映・v27',
+        updatedAt: '11/23 ドライブ連携対応・v28',
         nextPlan: {
             title: '11/29（日・いい肉の日）栃木ドライブ＆告白予定',
             date: '2026-11-29',
@@ -867,9 +928,18 @@
             .replace(/"/g, '&quot;');
     }
 
+    function extractDriveFileId(url) {
+        const s = String(url || '');
+        const m1 = s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (m1 && m1[1]) return m1[1];
+        const m2 = s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m2 && m2[1]) return m2[1];
+        return '';
+    }
+
     function toImageSrc(url) {
-        const m = (url || '').match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        return (m && m[1]) ? ('https://drive.google.com/uc?export=view&id=' + m[1]) : url;
+        const id = extractDriveFileId(url);
+        return id ? ('https://lh3.googleusercontent.com/d/' + id) : url;
     }
 
     function nowLabel() {
@@ -886,6 +956,274 @@
         else if (type === 'error') el.classList.add('status-error');
         else el.classList.add('status-info');
         el.textContent = msg;
+    }
+
+    function updateDriveBadge(text) {
+        const badge = document.getElementById('driveAuthBadge');
+        if (badge) badge.textContent = text;
+    }
+
+    function getSavedGoogleClientId() {
+        const el = document.getElementById('googleClientIdInput');
+        if (el && el.value.trim()) return el.value.trim();
+        return (readStorageWithFallback(STORAGE.GDRIVE_CLIENT_ID, LEGACY_KEYS.GDRIVE_CLIENT_ID) || '').trim();
+    }
+
+    function saveGoogleClientId() {
+        const cid = document.getElementById('googleClientIdInput').value.trim();
+        if (cid) localStorage.setItem(STORAGE.GDRIVE_CLIENT_ID, cid);
+        else localStorage.removeItem(STORAGE.GDRIVE_CLIENT_ID);
+        showMsg('driveStatus', 'Google クライアント ID を保存しました。', 'success');
+    }
+
+    function requestGoogleAccessToken(promptMode) {
+        return new Promise(function(resolve, reject) {
+            const clientId = getSavedGoogleClientId();
+            if (!clientId) {
+                reject(new Error('先に Google OAuth クライアント ID を入力して保存してください。'));
+                return;
+            }
+            if (driveAccessToken && Date.now() < driveTokenExpiry - 15000 && promptMode !== 'consent') {
+                resolve(driveAccessToken);
+                return;
+            }
+            if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+                reject(new Error('GoogleログインSDKの読み込み中です。少し待ってから再度お試しください。'));
+                return;
+            }
+            let settled = false;
+            const timer = setTimeout(function() {
+                if (!settled) {
+                    settled = true;
+                    reject(new Error('認証が完了しませんでした。ポップアップがブロックされていないか確認して再度お試しください。'));
+                }
+            }, 60000);
+
+            const tokenClient = window.google.accounts.oauth2.initTokenClient({
+                client_id: clientId,
+                scope: DRIVE_SCOPE,
+                callback: function(resp) {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    if (!resp || resp.error) {
+                        reject(new Error((resp && resp.error_description) || (resp && resp.error) || 'ドライブ認証に失敗しました。'));
+                        return;
+                    }
+                    driveAccessToken = resp.access_token;
+                    driveTokenExpiry = Date.now() + (Number(resp.expires_in || 3600) * 1000);
+                    updateDriveBadge('ドライブ状態：連携済み ✓');
+                    hydrateAuthorizedDriveImages();
+                    resolve(driveAccessToken);
+                }
+            });
+            tokenClient.requestAccessToken({ prompt: promptMode || '' });
+        });
+    }
+
+    const driveObjectUrlCache = {};
+    async function hydrateAuthorizedDriveImages() {
+        if (!driveAccessToken || Date.now() >= driveTokenExpiry - 15000) return;
+        const imgs = document.querySelectorAll('img[data-drive-file-id]');
+        for (let i = 0; i < imgs.length; i++) {
+            const img = imgs[i];
+            const fid = img.getAttribute('data-drive-file-id');
+            if (!fid) continue;
+            if (driveObjectUrlCache[fid]) {
+                img.style.display = 'block';
+                img.src = driveObjectUrlCache[fid];
+                continue;
+            }
+            try {
+                const res = await fetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(fid) + '?alt=media', {
+                    headers: { Authorization: 'Bearer ' + driveAccessToken }
+                });
+                if (!res.ok) continue;
+                const blob = await res.blob();
+                const objUrl = URL.createObjectURL(blob);
+                driveObjectUrlCache[fid] = objUrl;
+                img.style.display = 'block';
+                img.src = objUrl;
+            } catch (e) {}
+        }
+    }
+
+    async function ensureDriveFolderId() {
+        if (driveFolderIdCache) return driveFolderIdCache;
+        const token = await requestGoogleAccessToken('');
+        const q = encodeURIComponent("name='" + DRIVE_FOLDER_NAME + "' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+        const listRes = await fetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!listRes.ok) throw new Error('ドライブフォルダ検索エラー (' + listRes.status + ')');
+        const listData = await listRes.json();
+        if (listData && Array.isArray(listData.files) && listData.files.length > 0) {
+            driveFolderIdCache = listData.files[0].id;
+            return driveFolderIdCache;
+        }
+
+        const createRes = await fetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: DRIVE_FOLDER_NAME,
+                mimeType: 'application/vnd.google-apps.folder'
+            })
+        });
+        if (!createRes.ok) throw new Error('ドライブフォルダ作成エラー (' + createRes.status + ')');
+        const created = await createRes.json();
+        driveFolderIdCache = created.id;
+        return driveFolderIdCache;
+    }
+
+    async function uploadFileToDriveFolder(fileOrBlob, fileName, mimeType) {
+        const token = await requestGoogleAccessToken('');
+        const folderId = await ensureDriveFolderId();
+
+        const q = encodeURIComponent("name='" + fileName.replace(/'/g, "\\'") + "' and '" + folderId + "' in parents and trashed=false");
+        const existingRes = await fetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,webViewLink)', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        const existingJson = existingRes.ok ? await existingRes.json() : { files: [] };
+        const existingFile = (existingJson && existingJson.files && existingJson.files[0]) || null;
+
+        if (existingFile && fileName === DRIVE_BACKUP_FILENAME) {
+            const patchRes = await fetch('https://www.googleapis.com/upload/drive/v3/files/' + existingFile.id + '?uploadType=media&fields=id,webViewLink,name', {
+                method: 'PATCH',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': mimeType || 'application/json'
+                },
+                body: fileOrBlob
+            });
+            if (!patchRes.ok) throw new Error('ドライブ上書きエラー (' + patchRes.status + ')');
+            return await patchRes.json();
+        }
+
+        const metadata = {
+            name: fileName,
+            parents: [folderId],
+            mimeType: mimeType || fileOrBlob.type || 'application/octet-stream'
+        };
+        const boundary = 'ruka_drive_boundary_' + Date.now();
+        const delimiter = '--' + boundary + '\r\n';
+        const closeDelimiter = '\r\n--' + boundary + '--';
+
+        const metaPart = delimiter +
+            'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+            JSON.stringify(metadata) + '\r\n';
+        const mediaHeader = delimiter +
+            'Content-Type: ' + (mimeType || fileOrBlob.type || 'application/octet-stream') + '\r\n\r\n';
+
+        const bodyBlob = new Blob([metaPart, mediaHeader, fileOrBlob, closeDelimiter], {
+            type: 'multipart/related; boundary=' + boundary
+        });
+
+        const upRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink,name', {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token
+            },
+            body: bodyBlob
+        });
+        if (!upRes.ok) throw new Error('ドライブアップロードエラー (' + upRes.status + ')');
+        return await upRes.json();
+    }
+
+    function buildBackupPayload() {
+        const cur = parseInt(readStorageWithFallback(STORAGE.VER, LEGACY_KEYS.VER) || '28', 10);
+        const next = isNaN(cur) ? 29 : cur + 1;
+        localStorage.setItem(STORAGE.VER, String(next));
+        return {
+            version: 'RUKA_v' + next + '_backup',
+            exportedAt: new Date().toISOString(),
+            title: '🐬るか',
+            appState: {
+                updatedAt: state.updatedAt,
+                nextPlan: state.nextPlan,
+                nextSuggestions: state.nextSuggestions,
+                publicProfiles: { ruka: state.rukaProfile },
+                timeline: state.timeline
+            },
+            rukaProfile: state.rukaProfile,
+            timeline: state.timeline,
+            nextSuggestions: state.nextSuggestions,
+            strategyItems: strategyItems,
+            strategyText: (strategyItems || []).map(function(i) { return (i.done ? '[x] ' : '[ ] ') + i.text; }).join('\n')
+        };
+    }
+
+    async function connectGoogleDrive() {
+        try {
+            showMsg('driveStatus', 'Googleドライブ認証画面を開いています...', 'info');
+            await requestGoogleAccessToken('consent');
+            await ensureDriveFolderId();
+            showMsg('driveStatus', 'Googleドライブと連携しました！専用フォルダ「' + DRIVE_FOLDER_NAME + '」を確認済みです。', 'success');
+        } catch (err) {
+            showMsg('driveStatus', err.message, 'error');
+        }
+    }
+
+    async function uploadBackupToDrive() {
+        try {
+            showMsg('driveStatus', 'ドライブの ' + DRIVE_FOLDER_NAME + ' にバックアップを保存中...', 'info');
+            const payload = buildBackupPayload();
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            await uploadFileToDriveFolder(blob, DRIVE_BACKUP_FILENAME, 'application/json');
+            showMsg('driveStatus', '「' + DRIVE_FOLDER_NAME + '/' + DRIVE_BACKUP_FILENAME + '」に保存しました！', 'success');
+        } catch (err) {
+            showMsg('driveStatus', 'ドライブ保存エラー：' + err.message, 'error');
+        }
+    }
+
+    async function restoreBackupFromDrive() {
+        try {
+            showMsg('driveStatus', 'ドライブから最新バックアップを取得中...', 'info');
+            const token = await requestGoogleAccessToken('');
+            const folderId = await ensureDriveFolderId();
+            const q = encodeURIComponent("name='" + DRIVE_BACKUP_FILENAME + "' and '" + folderId + "' in parents and trashed=false");
+            const listRes = await fetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name,modifiedTime)&orderBy=modifiedTime%20desc', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            if (!listRes.ok) throw new Error('バックアップ検索エラー (' + listRes.status + ')');
+            const listData = await listRes.json();
+            if (!listData || !Array.isArray(listData.files) || listData.files.length === 0) {
+                throw new Error('ドライブ内に ' + DRIVE_BACKUP_FILENAME + ' が見つかりません。');
+            }
+            const fileId = listData.files[0].id;
+            const dlRes = await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            if (!dlRes.ok) throw new Error('バックアップ読み込みエラー (' + dlRes.status + ')');
+            const text = await dlRes.text();
+            applyImportedJson(JSON.parse(text.replace(/^\uFEFF/, '')));
+            showMsg('driveStatus', 'ドライブの最新バックアップから復元しました！', 'success');
+        } catch (err) {
+            showMsg('driveStatus', 'ドライブ復元エラー：' + err.message, 'error');
+        }
+    }
+
+    async function handleDrivePhotoSelection(file) {
+        if (!file) return;
+        const previewBox = document.getElementById('photoUploadPreview');
+        try {
+            showMsg('addStatus', '写真を Googleドライブ（' + DRIVE_FOLDER_NAME + '）へアップロード中...', 'info');
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const ext = (file.name && file.name.includes('.')) ? file.name.slice(file.name.lastIndexOf('.')) : '.jpg';
+            const safeName = 'ruka_' + stamp + ext;
+            const uploaded = await uploadFileToDriveFolder(file, safeName, file.type || 'image/jpeg');
+            const fileUrl = uploaded.webViewLink || ('https://drive.google.com/file/d/' + uploaded.id + '/view');
+            document.getElementById('entryMedia').value = fileUrl;
+            if (previewBox) {
+                const _pfid = extractDriveFileId(fileUrl); previewBox.innerHTML = 'ドライブ保存完了：<b>' + escapeHtml(safeName) + '</b><img ' + (_pfid ? ('data-drive-file-id="' + escapeHtml(_pfid) + '" ') : '') + 'src="' + escapeHtml(toImageSrc(fileUrl)) + '" onerror="this.style.display=\'none\'">'; hydrateAuthorizedDriveImages();
+            }
+            showMsg('addStatus', '写真をドライブに保存し、リンクを自動入力しました！', 'success');
+        } catch (err) {
+            showMsg('addStatus', '写真アップロードエラー：' + err.message, 'error');
+        }
     }
 
     function applySuggestionToStrategy(idx) {
@@ -1077,7 +1415,7 @@
                     const md = document.createElement('div');
                     md.className = 'timeline-media';
                     const img = document.createElement('img');
-                    img.src = toImageSrc(item.mediaUrl.trim());
+                    const _fid = extractDriveFileId(item.mediaUrl.trim()); if (_fid) img.setAttribute('data-drive-file-id', _fid); img.src = toImageSrc(item.mediaUrl.trim());
                     img.onerror = function() { img.style.display = 'none'; };
                     const a = document.createElement('a');
                     a.href = item.mediaUrl.trim();
@@ -1606,32 +1944,13 @@
     }
 
     function exportBackupJson() {
-        const cur = parseInt(readStorageWithFallback(STORAGE.VER, LEGACY_KEYS.VER) || '27', 10);
-        const next = isNaN(cur) ? 28 : cur + 1;
-        localStorage.setItem(STORAGE.VER, String(next));
-
-        const payload = {
-            version: 'RUKA_v' + next + '_backup',
-            exportedAt: new Date().toISOString(),
-            title: '🐬るか',
-            appState: {
-                updatedAt: state.updatedAt,
-                nextPlan: state.nextPlan,
-                nextSuggestions: state.nextSuggestions,
-                publicProfiles: { ruka: state.rukaProfile },
-                timeline: state.timeline
-            },
-            rukaProfile: state.rukaProfile,
-            timeline: state.timeline,
-            nextSuggestions: state.nextSuggestions,
-            strategyItems: strategyItems,
-            strategyText: (strategyItems || []).map(function(i) { return (i.done ? '[x] ' : '[ ] ') + i.text; }).join('\n')
-        };
+        const payload = buildBackupPayload();
+        const verNum = String(payload.version || '').replace(/\D+/g, '') || '29';
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'RUKA_v' + next + '_backup.json';
+        a.download = 'RUKA_v' + verNum + '_backup.json';
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -1650,6 +1969,13 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('./sw.js').catch(function() {});
+            });
+        }
+
+        const drivePhotoInput = document.getElementById('drivePhotoInput');
+        if (drivePhotoInput) {
+            drivePhotoInput.addEventListener('change', function(e) {
+                handleDrivePhotoSelection(e.target.files[0]);
             });
         }
 
@@ -1675,6 +2001,9 @@
 
         const savedKey = readStorageWithFallback(STORAGE.GEMINI_KEY, LEGACY_KEYS.GEMINI_KEY);
         if (savedKey) document.getElementById('geminiKeyInput').value = savedKey;
+
+        const savedClientId = readStorageWithFallback(STORAGE.GDRIVE_CLIENT_ID, LEGACY_KEYS.GDRIVE_CLIENT_ID);
+        if (savedClientId) document.getElementById('googleClientIdInput').value = savedClientId;
     });
 </script>
 </body>
