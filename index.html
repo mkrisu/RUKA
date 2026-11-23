@@ -393,6 +393,57 @@
             font-size: 0.82rem;
             color: var(--text-muted);
         }
+
+        .block-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .mini-action-group {
+            display: inline-flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .mini-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+            border-radius: 7px;
+            padding: 3px 8px;
+            font-size: 0.74rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mini-btn.edit {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-color: #f2c6d0;
+        }
+        .mini-btn.danger {
+            background: #fff0f2;
+            color: #b71c1c;
+            border-color: #f4c2c9;
+        }
+        .inline-edit-panel {
+            background: #fff;
+            border: 1px solid #e2c5a6;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        .inline-edit-panel textarea {
+            min-height: 95px;
+            font-size: 0.86rem;
+        }
+        .inline-edit-panel input[type="text"],
+        .inline-edit-panel input[type="date"],
+        .inline-edit-panel input[type="url"] {
+            font-size: 0.86rem;
+            padding: 8px 10px;
+        }
+
         .photo-preview-box img {
             max-width: 100%;
             max-height: 180px;
@@ -410,7 +461,7 @@
     <header class="app-header">
         <div>
             <h1 class="app-title">🐬るか</h1>
-            <div class="app-sub">自分専用整理・作戦＆記録ノート ・ RUKA_v29</div>
+            <div class="app-sub">自分専用整理・作戦＆記録ノート ・ RUKA_v30</div>
         </div>
         <div class="user-badge">🐿️ ソロ用</div>
     </header>
@@ -474,6 +525,7 @@
                 <span class="tag ng">NG：パクチー・牡蠣・雲丹</span>
             </div>
             <div class="btn-row">
+                <input type="text" id="newRukaProfileCategory" placeholder="カテゴリ（省略時は追記・その他）" style="flex:1; min-width:130px;">
                 <input type="text" id="newRukaProfileItem" placeholder="例：好きな食べ物・気づいた特徴を追記..." style="flex:2;">
                 <button type="button" class="btn btn-secondary" style="flex:1; min-width:90px;" onclick="addRukaProfileItem()">追記する</button>
             </div>
@@ -1355,17 +1407,105 @@
 
         const pBox = document.getElementById('rukaProfileContainer');
         pBox.innerHTML = '';
-        (state.rukaProfile || []).forEach(function(block) {
+        (state.rukaProfile || []).forEach(function(block, bIdx) {
             const div = document.createElement('div');
             div.className = 'profile-block';
+
+            const topRow = document.createElement('div');
+            topRow.className = 'block-header-row';
+
             const cat = document.createElement('div');
             cat.className = 'profile-block-title';
+            cat.style.marginBottom = '0';
             cat.textContent = block.category;
+
+            const actGroup = document.createElement('div');
+            actGroup.className = 'mini-action-group';
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className = 'mini-btn edit';
+            editBtn.textContent = '✏️ 編集';
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'mini-btn danger';
+            delBtn.textContent = '削除';
+            delBtn.addEventListener('click', function() {
+                if (!confirm('「' + block.category + '」の項目を削除しますか？')) return;
+                state.rukaProfile.splice(bIdx, 1);
+                state.updatedAt = nowLabel() + '（プロフ項目削除）';
+                persistState();
+                renderAll();
+            });
+
+            actGroup.appendChild(editBtn);
+            actGroup.appendChild(delBtn);
+            topRow.appendChild(cat);
+            topRow.appendChild(actGroup);
+
             const det = document.createElement('div');
             det.className = 'profile-block-body';
             det.textContent = block.detail;
-            div.appendChild(cat);
+
+            const editPanel = document.createElement('div');
+            editPanel.className = 'inline-edit-panel';
+            editPanel.style.display = 'none';
+
+            const catInput = document.createElement('input');
+            catInput.type = 'text';
+            catInput.value = block.category || '';
+            catInput.placeholder = 'カテゴリ名';
+
+            const detArea = document.createElement('textarea');
+            detArea.style.marginTop = '6px';
+            detArea.value = block.detail || '';
+            detArea.placeholder = '内容';
+
+            const btnRow = document.createElement('div');
+            btnRow.className = 'btn-row';
+            btnRow.style.marginTop = '8px';
+
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className = 'btn btn-primary';
+            saveBtn.style.padding = '8px 10px';
+            saveBtn.textContent = '保存';
+            saveBtn.addEventListener('click', function() {
+                const nextCat = catInput.value.trim() || 'メモ';
+                const nextDet = detArea.value.trim();
+                if (!nextDet) return;
+                state.rukaProfile[bIdx] = { category: nextCat, detail: nextDet };
+                state.updatedAt = nowLabel() + '（プロフ編集）';
+                persistState();
+                renderAll();
+            });
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.style.padding = '8px 10px';
+            cancelBtn.textContent = 'キャンセル';
+            cancelBtn.addEventListener('click', function() {
+                editPanel.style.display = 'none';
+                det.style.display = 'block';
+            });
+
+            editBtn.addEventListener('click', function() {
+                const isOpen = editPanel.style.display === 'block';
+                editPanel.style.display = isOpen ? 'none' : 'block';
+                det.style.display = isOpen ? 'block' : 'none';
+            });
+
+            btnRow.appendChild(saveBtn);
+            btnRow.appendChild(cancelBtn);
+            editPanel.appendChild(catInput);
+            editPanel.appendChild(detArea);
+            editPanel.appendChild(btnRow);
+
+            div.appendChild(topRow);
             div.appendChild(det);
+            div.appendChild(editPanel);
             pBox.appendChild(div);
         });
 
@@ -1385,11 +1525,44 @@
                 const div = document.createElement('div');
                 div.className = 'timeline-entry';
 
+                const tlTopRow = document.createElement('div');
+                tlTopRow.className = 'block-header-row';
+
                 const titleEl = document.createElement('div');
                 titleEl.className = 'timeline-title';
+                titleEl.style.marginBottom = '0';
                 titleEl.textContent = item.title || '';
-                div.appendChild(titleEl);
 
+                const tlActGroup = document.createElement('div');
+                tlActGroup.className = 'mini-action-group';
+
+                const tlEditBtn = document.createElement('button');
+                tlEditBtn.type = 'button';
+                tlEditBtn.className = 'mini-btn edit';
+                tlEditBtn.textContent = '✏️ 編集';
+
+                const tlDelBtn = document.createElement('button');
+                tlDelBtn.type = 'button';
+                tlDelBtn.className = 'mini-btn danger';
+                tlDelBtn.textContent = '削除';
+                tlDelBtn.addEventListener('click', function() {
+                    if (!confirm('「' + (item.title || 'この記録') + '」を削除しますか？')) return;
+                    const realIdx = (state.timeline || []).findIndex(function(x) { return x.id === item.id; });
+                    if (realIdx >= 0) {
+                        state.timeline.splice(realIdx, 1);
+                        state.updatedAt = nowLabel() + '（履歴削除）';
+                        persistState();
+                        renderAll();
+                    }
+                });
+
+                tlActGroup.appendChild(tlEditBtn);
+                tlActGroup.appendChild(tlDelBtn);
+                tlTopRow.appendChild(titleEl);
+                tlTopRow.appendChild(tlActGroup);
+                div.appendChild(tlTopRow);
+
+                const bodyWrap = document.createElement('div');
                 const paras = (Array.isArray(item.paragraphs) && item.paragraphs.length > 0)
                     ? item.paragraphs
                     : String(item.body || '').split(/\n+/).filter(Boolean);
@@ -1398,8 +1571,94 @@
                     const p = document.createElement('p');
                     p.className = 'timeline-para';
                     p.textContent = pText;
-                    div.appendChild(p);
+                    bodyWrap.appendChild(p);
                 });
+                div.appendChild(bodyWrap);
+
+                const tlEditPanel = document.createElement('div');
+                tlEditPanel.className = 'inline-edit-panel';
+                tlEditPanel.style.display = 'none';
+
+                const tlTitleIn = document.createElement('input');
+                tlTitleIn.type = 'text';
+                tlTitleIn.value = item.title || '';
+                tlTitleIn.placeholder = '見出し（例：11/21（2回目）越谷レイクタウン映画デート）';
+
+                const tlDateIn = document.createElement('input');
+                tlDateIn.type = 'date';
+                tlDateIn.style.marginTop = '6px';
+                tlDateIn.value = item.dateKey || '';
+
+                const tlBodyIn = document.createElement('textarea');
+                tlBodyIn.style.marginTop = '6px';
+                tlBodyIn.value = paras.join('\n');
+                tlBodyIn.placeholder = '1行ごとに段落として保存されます';
+
+                const tlMediaIn = document.createElement('input');
+                tlMediaIn.type = 'url';
+                tlMediaIn.style.marginTop = '6px';
+                tlMediaIn.value = item.mediaUrl || '';
+                tlMediaIn.placeholder = '写真・動画URL（任意）';
+
+                const tlPlaceIn = document.createElement('input');
+                tlPlaceIn.type = 'url';
+                tlPlaceIn.style.marginTop = '6px';
+                tlPlaceIn.value = item.placeUrl || '';
+                tlPlaceIn.placeholder = 'GoogleマップURL（任意）';
+
+                const tlBtnRow = document.createElement('div');
+                tlBtnRow.className = 'btn-row';
+                tlBtnRow.style.marginTop = '8px';
+
+                const tlSaveBtn = document.createElement('button');
+                tlSaveBtn.type = 'button';
+                tlSaveBtn.className = 'btn btn-primary';
+                tlSaveBtn.style.padding = '8px 10px';
+                tlSaveBtn.textContent = '保存';
+                tlSaveBtn.addEventListener('click', function() {
+                    const newTitle = tlTitleIn.value.trim() || '思い出';
+                    const newDate = tlDateIn.value.trim();
+                    const newParas = tlBodyIn.value.split(/\r?\n+/).map(function(l) { return l.trim(); }).filter(Boolean);
+                    const inf = inferDateInfoFromText((newDate || '') + ' ' + newTitle);
+                    const realIdx = (state.timeline || []).findIndex(function(x) { return x.id === item.id; });
+                    if (realIdx >= 0) {
+                        state.timeline[realIdx].title = newTitle;
+                        state.timeline[realIdx].dateKey = newDate || inf.dateKey;
+                        state.timeline[realIdx].yearMonth = inf.yearMonth;
+                        state.timeline[realIdx].paragraphs = newParas.length > 0 ? newParas : [''];
+                        state.timeline[realIdx].mediaUrl = tlMediaIn.value.trim();
+                        state.timeline[realIdx].placeUrl = tlPlaceIn.value.trim();
+                        state.updatedAt = nowLabel() + '（履歴編集）';
+                        persistState();
+                        renderAll();
+                    }
+                });
+
+                const tlCancelBtn = document.createElement('button');
+                tlCancelBtn.type = 'button';
+                tlCancelBtn.className = 'btn btn-secondary';
+                tlCancelBtn.style.padding = '8px 10px';
+                tlCancelBtn.textContent = 'キャンセル';
+                tlCancelBtn.addEventListener('click', function() {
+                    tlEditPanel.style.display = 'none';
+                    bodyWrap.style.display = 'block';
+                });
+
+                tlEditBtn.addEventListener('click', function() {
+                    const isOpen = tlEditPanel.style.display === 'block';
+                    tlEditPanel.style.display = isOpen ? 'none' : 'block';
+                    bodyWrap.style.display = isOpen ? 'block' : 'none';
+                });
+
+                tlBtnRow.appendChild(tlSaveBtn);
+                tlBtnRow.appendChild(tlCancelBtn);
+                tlEditPanel.appendChild(tlTitleIn);
+                tlEditPanel.appendChild(tlDateIn);
+                tlEditPanel.appendChild(tlBodyIn);
+                tlEditPanel.appendChild(tlMediaIn);
+                tlEditPanel.appendChild(tlPlaceIn);
+                tlEditPanel.appendChild(tlBtnRow);
+                div.appendChild(tlEditPanel);
 
                 if (item.placeUrl && /^https?:\/\//i.test(item.placeUrl.trim())) {
                     const pLink = document.createElement('a');
@@ -1519,10 +1778,22 @@
     }
 
     function addRukaProfileItem() {
+        const catEl = document.getElementById('newRukaProfileCategory');
+        const cat = catEl ? catEl.value.trim() : '';
         const text = document.getElementById('newRukaProfileItem').value.trim();
         if (!text) return;
         if (!Array.isArray(state.rukaProfile)) state.rukaProfile = [];
-        appendProfileNote(text);
+        if (cat) {
+            const idx = state.rukaProfile.findIndex(function(b) { return b.category === cat; });
+            if (idx >= 0) {
+                state.rukaProfile[idx].detail = state.rukaProfile[idx].detail ? (state.rukaProfile[idx].detail + '\n' + text) : text;
+            } else {
+                state.rukaProfile.push({ category: cat, detail: text });
+            }
+        } else {
+            appendProfileNote(text);
+        }
+        if (catEl) catEl.value = '';
         document.getElementById('newRukaProfileItem').value = '';
         state.updatedAt = nowLabel();
         persistState();
